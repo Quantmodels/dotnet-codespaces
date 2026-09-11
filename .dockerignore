@@ -1,0 +1,12 @@
+.git
+.github
+.vscode
+.vs
+bin/
+obj/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.tmp
+*.log

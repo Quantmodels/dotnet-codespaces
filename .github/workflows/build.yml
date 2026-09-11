@@ -1,12 +1,17 @@
-name: Build Backend and Frontend
+name: Build and Publish Containers
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
-      
+  workflow_dispatch:
+
 permissions:
   contents: read
+  packages: write
 
 jobs:
   build:
@@ -34,3 +39,45 @@ jobs:
 
       - name: Build project
         run: dotnet build ${{ matrix.project }} --no-restore --configuration Release
+
+  docker:
+    name: Build and push Docker images
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize image owner
+        id: image_owner
+        shell: bash
+        run: echo "value=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./SampleApp/BackEnd/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.image_owner.outputs.value }}/dotnet-codespaces-backend:${{ github.sha }}
+            ghcr.io/${{ steps.image_owner.outputs.value }}/dotnet-codespaces-backend:latest
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./SampleApp/FrontEnd/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.image_owner.outputs.value }}/dotnet-codespaces-frontend:${{ github.sha }}
+            ghcr.io/${{ steps.image_owner.outputs.value }}/dotnet-codespaces-frontend:latest
