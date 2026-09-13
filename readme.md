@@ -8,6 +8,18 @@ We've given you both a frontend and backend to play around with and where you go
 
 Everything you do here is contained within this one codespace. There is no repository on GitHub yet. If and when you’re ready you can click "Publish Branch" and we’ll create your repository and push up your project. If you were just exploring then and have no further need for this code then you can simply delete your codespace and it's gone forever.
 
+### Deploy the combined Docker image
+
+The root `Dockerfile` publishes both the backend API and the Blazor frontend into one image. The container starts the backend on `127.0.0.1:8080` and the frontend on Render's `PORT` environment variable. The frontend calls the backend through `http://127.0.0.1:8080`, so it does not require a separate Docker service named `backend`.
+
+For a Render Docker Web Service, use:
+
+```text
+ghcr.io/quantmodels/dotnet-codespaces:latest
+```
+
+Do not set a custom start command. Render should provide the `PORT` environment variable; the image entrypoint starts both applications.
+
 ### Run Options
 
 [![Open in GitHub Codespaces](https://img.shields.io/static/v1?style=for-the-badge&label=GitHub+Codespaces&message=Open&color=lightgrey&logo=github)](https://codespaces.new/github/dotnet-codespaces)
